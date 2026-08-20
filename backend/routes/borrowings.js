@@ -27,19 +27,47 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// POST create borrowing — also marks book as unavailable
+// POST create borrowing — auto creates member and book if not exists
 router.post('/', async (req, res, next) => {
   try {
-    const { memberId, bookId, borrowDate, returnDate, status } = req.body;
+    const Member = require('../models/Member');
+    const { memberName, bookTitle, borrowDate, returnDate } = req.body;
 
-    const book = await Book.findById(bookId);
-    if (!book) return res.status(404).json({ error: 'Book not found' });
-    if (!book.available) return res.status(400).json({ error: 'Book is not available for borrowing' });
+    if (!memberName || !bookTitle || !borrowDate || !returnDate) {
+      return res.status(400).json({ error: 'memberName, bookTitle, borrowDate and returnDate are required' });
+    }
 
-    const borrowing = await Borrowing.create({ memberId, bookId, borrowDate, returnDate, status });
+    // Find or create member by name
+    let member = await Member.findOne({ name: new RegExp(`^${memberName}$`, 'i') });
+    if (!member) {
+      member = await Member.create({
+        name: memberName,
+        email: `${memberName.toLowerCase().replace(/\s+/g, '.')}@library.com`,
+        department: 'General',
+      });
+    }
 
-    // Mark book as unavailable
-    await Book.findByIdAndUpdate(bookId, { available: false });
+    // Find or create book by title
+    let book = await Book.findOne({ title: new RegExp(`^${bookTitle}$`, 'i') });
+    if (!book) {
+      book = await Book.create({
+        title: bookTitle,
+        author: 'Unknown',
+        category: 'General',
+        available: false,
+      });
+    } else if (!book.available) {
+      return res.status(400).json({ error: `"${book.title}" is currently not available for borrowing` });
+    } else {
+      await Book.findByIdAndUpdate(book._id, { available: false });
+    }
+
+    const borrowing = await Borrowing.create({
+      memberId: member._id,
+      bookId: book._id,
+      borrowDate,
+      returnDate,
+    });
 
     res.status(201).json(borrowing);
   } catch (err) {

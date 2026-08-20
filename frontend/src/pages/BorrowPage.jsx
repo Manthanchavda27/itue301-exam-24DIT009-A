@@ -9,7 +9,7 @@ const BorrowPage = () => {
     returnDate: '',
   });
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError]     = useState(null);
   const [success, setSuccess] = useState(null);
 
   const handleChange = (e) => {
@@ -23,44 +23,9 @@ const BorrowPage = () => {
     setSubmitting(true);
     setError(null);
     setSuccess(null);
-
     try {
-      // Find member by name
-      const membersRes = await axios.get('http://localhost:5000/api/v1/members');
-      const member = membersRes.data.find(
-        m => m.name.toLowerCase() === form.memberName.toLowerCase()
-      );
-      if (!member) {
-        setError(`Member "${form.memberName}" not found. Please check the name.`);
-        setSubmitting(false);
-        return;
-      }
-
-      // Find book by title
-      const booksRes = await axios.get('http://localhost:5000/api/v1/books');
-      const book = booksRes.data.find(
-        b => b.title.toLowerCase() === form.bookTitle.toLowerCase()
-      );
-      if (!book) {
-        setError(`Book "${form.bookTitle}" not found. Please check the title.`);
-        setSubmitting(false);
-        return;
-      }
-
-      if (!book.available) {
-        setError(`"${book.title}" is currently not available.`);
-        setSubmitting(false);
-        return;
-      }
-
-      await axios.post('http://localhost:5000/api/v1/borrowings', {
-        memberId: member._id,
-        bookId: book._id,
-        borrowDate: form.borrowDate,
-        returnDate: form.returnDate,
-      });
-
-      setSuccess(`✅ "${book.title}" borrowed by ${member.name} successfully!`);
+      await axios.post('http://localhost:5000/api/v1/borrowings', form);
+      setSuccess(`✅ "${form.bookTitle}" borrowed by ${form.memberName} successfully!`);
       setForm({ memberName: '', bookTitle: '', borrowDate: '', returnDate: '' });
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to submit borrow request.');
@@ -72,7 +37,7 @@ const BorrowPage = () => {
   return (
     <div className="page">
       <h2 className="page-title">Borrow a Book</h2>
-      <p className="page-subtitle">Fill in the details to submit a borrow request</p>
+      <p className="page-subtitle">Enter your name and the book title to borrow</p>
 
       <div className="form-card" style={{ marginTop: '24px' }}>
         <form onSubmit={handleSubmit}>
@@ -82,7 +47,7 @@ const BorrowPage = () => {
               name="memberName"
               value={form.memberName}
               onChange={handleChange}
-              placeholder="Enter member name"
+              placeholder="Enter your name"
               required
             />
           </div>
