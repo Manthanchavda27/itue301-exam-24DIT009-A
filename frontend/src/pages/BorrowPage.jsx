@@ -11,6 +11,7 @@ const BorrowPage = () => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setSubmitted(false);
   };
 
   const handleSubmit = (e) => {
@@ -18,42 +19,47 @@ const BorrowPage = () => {
     setSubmitted(true);
   };
 
-  const inputStyle = { display: 'block', margin: '8px 0 16px', padding: '8px', width: '300px' };
-  const labelStyle = { fontWeight: 'bold' };
-
   return (
-    <div style={{ padding: '24px' }}>
-      <h2>Borrow a Book</h2>
-      <form onSubmit={handleSubmit}>
-        <label style={labelStyle}>Member Name</label>
-        <input style={inputStyle} name="memberName" value={form.memberName} onChange={handleChange} required />
+    <div className="page">
+      <h2 className="page-title">Borrow a Book</h2>
+      <p className="page-subtitle">Fill in the details to submit a borrow request</p>
 
-        <label style={labelStyle}>Book Title</label>
-        <input style={inputStyle} name="bookTitle" value={form.bookTitle} onChange={handleChange} required />
+      <div className="form-card" style={{ marginTop: '24px' }}>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Member Name</label>
+            <input name="memberName" value={form.memberName} onChange={handleChange} placeholder="Enter your name" required />
+          </div>
+          <div className="form-group">
+            <label>Book Title</label>
+            <input name="bookTitle" value={form.bookTitle} onChange={handleChange} placeholder="Enter book title" required />
+          </div>
+          <div className="form-group">
+            <label>Borrow Date</label>
+            <input type="date" name="borrowDate" value={form.borrowDate} onChange={handleChange} required />
+          </div>
+          <div className="form-group">
+            <label>Return Date</label>
+            <input type="date" name="returnDate" value={form.returnDate} onChange={handleChange} required />
+          </div>
+          <button type="submit" className="btn-primary">Submit Request</button>
+        </form>
 
-        <label style={labelStyle}>Borrow Date</label>
-        <input style={inputStyle} type="date" name="borrowDate" value={form.borrowDate} onChange={handleChange} required />
+        {(form.memberName || form.bookTitle) && (
+          <div className="live-preview">
+            {form.memberName && <p>👤 Member: <strong>{form.memberName}</strong></p>}
+            {form.bookTitle && <p>📖 Book: <strong>{form.bookTitle}</strong></p>}
+            {form.borrowDate && <p>📅 From: <strong>{form.borrowDate}</strong></p>}
+            {form.returnDate && <p>📅 Until: <strong>{form.returnDate}</strong></p>}
+          </div>
+        )}
 
-        <label style={labelStyle}>Return Date</label>
-        <input style={inputStyle} type="date" name="returnDate" value={form.returnDate} onChange={handleChange} required />
-
-        <button type="submit" style={{ padding: '10px 24px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-          Submit
-        </button>
-      </form>
-
-      {form.memberName && (
-        <p style={{ marginTop: '16px' }}>Member: <strong>{form.memberName}</strong></p>
-      )}
-      {form.bookTitle && (
-        <p>Book: <strong>{form.bookTitle}</strong></p>
-      )}
-
-      {submitted && (
-        <p style={{ color: 'green', marginTop: '12px' }}>
-          ✅ Borrow request submitted for <strong>{form.memberName}</strong> — <strong>{form.bookTitle}</strong>
-        </p>
-      )}
+        {submitted && (
+          <div className="success-msg">
+            ✅ Borrow request submitted for <strong>{form.memberName}</strong> — <strong>{form.bookTitle}</strong>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

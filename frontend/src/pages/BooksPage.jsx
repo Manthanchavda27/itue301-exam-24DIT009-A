@@ -13,19 +13,21 @@ const BooksPage = () => {
         setData(res.data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch(() => {
         setError('Failed to fetch books. Make sure the backend is running.');
         setLoading(false);
       });
   }, []);
 
-  if (loading) return <p style={{ padding: '24px' }}>Loading books...</p>;
-  if (error)   return <p style={{ padding: '24px', color: 'red' }}>{error}</p>;
-
   return (
-    <div style={{ padding: '24px' }}>
-      <h2>All Books</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+    <div className="page">
+      <h2 className="page-title">All Books</h2>
+      <p className="page-subtitle">Browse the library collection</p>
+
+      {loading && <p className="status-msg">⏳ Loading books...</p>}
+      {error && <p className="error-msg">⚠️ {error}</p>}
+
+      <div className="books-grid">
         {data.map(book => (
           <BookCard
             key={book.id || book._id}
